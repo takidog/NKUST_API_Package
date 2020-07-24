@@ -1,6 +1,10 @@
+import 'package:dio/dio.dart';
+
 class ResponseData {
   int errorCode = 200;
   String errorMessage;
   Map<String, dynamic> parseData;
-  ResponseData({this.errorCode, this.errorMessage, this.parseData});
+  Response response;
+  ResponseData(
+      {this.errorCode, this.errorMessage, this.parseData, this.response});
 }
