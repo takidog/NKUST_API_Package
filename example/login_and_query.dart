@@ -1,4 +1,4 @@
-import 'package:NKUST_API_Package/src/webap.dart';
+import 'package:nkust_api/src/webap.dart';
 
 void main() async {
   NKUST_API.instance.setProxy("127.0.0.1:8888");

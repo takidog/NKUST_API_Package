@@ -3,11 +3,11 @@ import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 //overwrite origin Cookie Manager.
-import 'package:NKUST_API_Package/src/utils/privateCookieManager.dart';
+import 'package:nkust_api/src/utils/private_cookie_manager.dart';
 //parser
-import 'package:NKUST_API_Package/src/parser/apParser.dart';
+import 'package:nkust_api/src/parser/ap_parser.dart';
 //response data type
-import 'package:NKUST_API_Package/src/utils/response.dart';
+import 'package:nkust_api/src/utils/response.dart';
 
 class NKUST_API {
   static Dio dio;
