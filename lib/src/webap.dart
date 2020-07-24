@@ -93,5 +93,12 @@ class NKUST_API {
     return ResponseData(errorCode: 5400, errorMessage: "Something error.");
   }
 
-  Future<ResponseData> apQuery() async {}
+  Future<Response> apQuery(
+      String queryQid, Map<String, String> queryData) async {
+    String url =
+        "http://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
+    return await dio.post(url,
+        data: queryData,
+        options: Options(contentType: Headers.formUrlEncodedContentType));
+  }
 }
