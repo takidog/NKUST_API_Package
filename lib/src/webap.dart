@@ -117,7 +117,7 @@ class NKUST_API {
       String queryQid,
       Map<String, String> queryData) async {
     String url =
-        "http://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
+        "https://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
     try {
       Response request = await dio.post(url,
           data: queryData,
