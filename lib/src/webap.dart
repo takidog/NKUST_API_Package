@@ -157,4 +157,27 @@ class NKUST_API {
     }
     return query;
   }
+
+  Future<ResponseData> semesters() async {
+    /*
+    Retrun type ResponseData
+    errorCode:
+    2000   succss.
+
+    5000   NKUST server error.
+    5002   Dio error, maybe NKUST server error.
+    5040   Timeout.
+    5400   Something error.
+
+    */
+    if (this.isLogin == false) {
+      return ResponseData(errorCode: 10002, errorMessage: "Need Login.");
+    }
+    var query = await apQuery("ag304_01", null);
+    if (query.errorCode >= 2000 && query.errorCode < 2100) {
+      query.parseData = semestersParser(query.response.data);
+      return query;
+    }
+    return query;
+  }
 }
