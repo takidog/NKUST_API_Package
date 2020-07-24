@@ -9,10 +9,13 @@ import 'package:nkust_api/src/parser/ap_parser.dart';
 //response data type
 import 'package:nkust_api/src/utils/response.dart';
 
+import 'package:nkust_api/src/utils/config.dart';
+
 class NKUST_API {
   static Dio dio;
   static NKUST_API _instance;
   static CookieJar cookieJar;
+  static NkustAPIConfig config;
   bool isLogin;
 
   static NKUST_API get instance {
@@ -20,6 +23,7 @@ class NKUST_API {
       _instance = NKUST_API();
       dio = Dio();
       cookieJar = CookieJar();
+      config = NkustAPIConfig();
       dioInit();
     }
     return _instance;
@@ -34,12 +38,18 @@ class NKUST_API {
     };
   }
 
+  void setConfig(NkustAPIConfig customizeConfig) {
+    config = customizeConfig;
+  }
+
   static dioInit() {
     // Use PrivateCookieManager to overwrite origin CookieManager, because
     // Cookie name of the NKUST ap system not follow the RFC6265. :(
     dio.interceptors.add(PrivateCookieManager(cookieJar));
     dio.options.headers['user-agent'] =
         'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
+    dio.options.connectTimeout = config.dioTimeoutMs;
+    dio.options.receiveTimeout = config.dioTimeoutMs;
   }
 
   Future<ResponseData> apLogin(String username, String password) async {
