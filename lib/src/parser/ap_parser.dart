@@ -69,6 +69,55 @@ Map<String, dynamic> semestersParser(String html) {
   return data;
 }
 
+Map<String, dynamic> scoresParser(String html) {
+  var document = parse(html);
+
+  Map<String, dynamic> data = {
+    "scores": [],
+    "detail": {
+      "conduct": null,
+      "classRank": null,
+      "departmentRank": null,
+      'average': null
+    }
+  };
+  //detail part
+  try {
+    RegExp exp = new RegExp(r".{0,4}：([0-9./]{0,})");
+    var matches = exp.allMatches(document
+        .getElementsByTagName('caption')[0]
+        .getElementsByTagName("div")[0]
+        .text);
+    data['detail'] = {
+      "conduct": matches.elementAt(0).group(1),
+      "classRank": matches.elementAt(1).group(1),
+      "departmentRank": matches.elementAt(2).group(1),
+      "average": matches.elementAt(3).group(1)
+    };
+  } on Exception catch (e) {}
+  //scores part
+
+  try {
+    var table =
+        document.getElementsByTagName("table")[1].getElementsByTagName("tr");
+    for (int scoresIndex = 1; scoresIndex < table.length; scoresIndex++) {
+      var td = table[scoresIndex].getElementsByTagName('td');
+      data['scores'].add({
+        "title": td[1].text,
+        'units': td[2].text,
+        'hours': td[3].text,
+        'required': td[4].text,
+        'at': td[5].text,
+        'middleScore': td[6].text,
+        'finalScore': td[7].text,
+        'remark': td[8].text,
+      });
+    }
+  } on Exception catch (e) {}
+
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
