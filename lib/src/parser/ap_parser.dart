@@ -118,6 +118,117 @@ Map<String, dynamic> scoresParser(String html) {
   return data;
 }
 
+Map<String, dynamic> coursetableParser(String html) {
+  Map<String, dynamic> data = {
+    "courses": [],
+    "coursetable": {
+      "timeCodes": [],
+      "Monday": [],
+      "Tuesday": [],
+      "Wednesday": [],
+      "Thursday": [],
+      "Friday": [],
+      "Saturday": [],
+      "Sunday": []
+    }
+  };
+  var document = parse(html);
+
+  if (document.getElementsByTagName("table").length == 0) {
+    //table not found
+    return data;
+  }
+  try {
+    //the top table parse
+    var topTable =
+        document.getElementsByTagName("table")[0].getElementsByTagName("tr");
+    for (int i = 1; i < topTable.length; i++) {
+      var td = topTable[i].getElementsByTagName('td');
+      data['courses'].add({
+        'code': td[0].text,
+        'title': td[1].text,
+        'className': td[2].text,
+        'group': td[3].text,
+        'units': td[4].text,
+        'hours': td[5].text,
+        'required': td[6].text,
+        'at': td[7].text,
+        'times': td[8].text,
+        "instructors": td[9].text.split(","),
+        'location': {'room': td[10].text}
+      });
+    }
+  } on Exception catch (e) {} on RangeError catch (r) {}
+
+  //the second talbe.
+
+  //make timetable
+  var secondTable =
+      document.getElementsByTagName("table")[1].getElementsByTagName("tr");
+  try {
+    //remark:Best split is regex but... Chinese have some difficulty Q_Q
+    for (int i = 1; i < secondTable.length; i++) {
+      var _temptext =
+          secondTable[i].getElementsByTagName('td')[0].text.replaceAll(" ", "");
+
+      data['coursetable']['timeCodes']
+          .add(_temptext.substring(0, _temptext.length - 10));
+    }
+  } on Exception catch (e) {}
+  //make each day.
+  List keyName = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+  ];
+  ;
+
+  try {
+    for (int key = 0; key < keyName.length; key++) {
+      for (int eachSession = 1;
+          eachSession < data['coursetable']['timeCodes'].length;
+          eachSession++) {
+        var eachDays = document
+            .getElementsByTagName("table")[1]
+            .getElementsByTagName("tr")[eachSession]
+            .getElementsByTagName("td")[key + 1];
+        var splitData = (eachDays.outerHtml
+            .substring(35, eachDays.outerHtml.length - 11)
+            .split("<br>"));
+
+        var _eachDaysDate = document
+            .getElementsByTagName("table")[1]
+            .getElementsByTagName("tr")[eachSession]
+            .getElementsByTagName("td")[0]
+            .outerHtml;
+        var courseTime = _eachDaysDate
+            .substring(_eachDaysDate.indexOf("&nbsp;<br>") + 10,
+                _eachDaysDate.indexOf("<br>&nbsp;<"))
+            .split("<br>");
+
+        if (splitData.length <= 1) {
+          continue;
+        }
+        data['coursetable'][keyName[key]].add({
+          'title': splitData[0],
+          'date': {
+            "startTime": courseTime[1].split('-')[0],
+            "endTime": courseTime[1].split('-')[1],
+            'section': courseTime[0]
+          },
+          'location': {"room": splitData[2]},
+          'instructors': splitData[1].split(","),
+        });
+      }
+    }
+  } on Exception catch (e) {}
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
