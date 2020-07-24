@@ -93,12 +93,47 @@ class NKUST_API {
     return ResponseData(errorCode: 5400, errorMessage: "Something error.");
   }
 
-  Future<Response> apQuery(
-      String queryQid, Map<String, String> queryData) async {
+  Future<ResponseData> apQuery(
+      /*
+    Retrun type ResponseData
+    errorCode:
+      2000   succss.
+      5000   NKUST server error.
+      5002   Dio error, maybe NKUST server error.
+      5040   Timeout.
+      5400   Something error.
+
+    */
+      String queryQid,
+      Map<String, String> queryData) async {
     String url =
         "http://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
-    return await dio.post(url,
-        data: queryData,
-        options: Options(contentType: Headers.formUrlEncodedContentType));
+    try {
+      Response request = await dio.post(url,
+          data: queryData,
+          options: Options(contentType: Headers.formUrlEncodedContentType));
+      if (request.statusCode == 200) {
+        return ResponseData(
+            errorCode: 2000, errorMessage: "Success", response: request);
+      }
+      ;
+    } on DioError catch (e) {
+      if (e.type == DioErrorType.CONNECT_TIMEOUT ||
+          e.type == DioErrorType.RECEIVE_TIMEOUT) {
+        return ResponseData(errorCode: 5040, errorMessage: "Connect timeout.");
+      }
+      if (e.type == DioErrorType.RESPONSE) {
+        if (e.response.statusCode != 200) {
+          return ResponseData(
+              errorCode: 5000,
+              errorMessage: "NKUST Server have something wrong.");
+        }
+      }
+      return ResponseData(
+          errorCode: 5002, errorMessage: "Dio error or NKUST Server error :(");
+    } on Exception catch (e) {}
+    return ResponseData(errorCode: 5400, errorMessage: "Something error.");
+  }
+
   }
 }
