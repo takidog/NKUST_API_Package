@@ -18,8 +18,8 @@ class ResponseData {
 |   2000    | General success                                              |                Yes                 |            Yes             |
 |    TBD    |                                                              |                                    |                            |
 |    TBD    |                                                              |                                    |                            |
-|   5000    | NKUST Server error                                           |                 No                 |             No             |
-|   5002    | Dio error, a little bit possible is <br />NKUST Server error |                 No                 |             No             |
-|   5040    | Timeout                                                      |                 No                 |             No             |
-|   5400    | Something error.                                             |                 No                 |             No             |
+|   5000    | NKUST Server error                                           |                Null                |            Null            |
+|   5002    | Dio error, a little bit possible is <br />NKUST Server error |                Null                |            Null            |
+|   5040    | Timeout                                                      |                Null                |            Null            |
+|   5400    | Something error.                                             |                Null                |            Null            |
 
