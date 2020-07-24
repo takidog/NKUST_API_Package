@@ -38,6 +38,37 @@ Map<String, dynamic> apUserInfoParser(String html) {
   return data;
 }
 
+Map<String, dynamic> semestersParser(String html) {
+  Map<String, dynamic> data = {
+    "data": [],
+    "default": {"year": "108", "value": "2", "text": "108學年第二學期(Parse失敗)"}
+  };
+  var document = parse(html);
+
+  var ymsElements =
+      document.getElementById("yms_yms").getElementsByTagName("option");
+  if (ymsElements.length < 30) {
+    //parse fail.
+    return data;
+  }
+  for (int i = 0; i < ymsElements.length; i++) {
+    data['data'].add({
+      "year": ymsElements[i].attributes["value"].split("#")[0],
+      "value": ymsElements[i].attributes["value"].split("#")[1],
+      "text": ymsElements[i].text
+    });
+    if (ymsElements[i].attributes["selected"] != null) {
+      //set default
+      data['default'] = {
+        "year": ymsElements[i].attributes["value"].split("#")[0],
+        "value": ymsElements[i].attributes["value"].split("#")[1],
+        "text": ymsElements[i].text
+      };
+    }
+  }
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
