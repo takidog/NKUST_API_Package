@@ -4,9 +4,7 @@ import 'dart:io';
 int apLoginParser(String html) {
   //100 login success
   //101 login fail
-
-  if (html.indexOf("alert(") < 0 &&
-      html.indexOf("top.location.href='index.html") > -1) {
+  if (html.indexOf(">alert(") < 0) {
     return 100;
   }
   return 101;
