@@ -292,6 +292,22 @@ Map<String, dynamic> rewardAndPenaltyParser(String html) {
   return data;
 }
 
+Map<String, dynamic> roomListParser(String html) {
+  Map<String, dynamic> data = {"data": []};
+
+  var document = parse(html);
+  var table = document.getElementById("room_id").getElementsByTagName("option");
+  try {
+    for (int i = 1; i < table.length; i++) {
+      data["data"].add(
+          {"roomName": table[i].text, "roomId": table[i].attributes["value"]});
+    }
+  } on Exception catch (e) {
+    print(e);
+  }
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
