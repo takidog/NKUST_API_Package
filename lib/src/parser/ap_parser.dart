@@ -229,6 +229,36 @@ Map<String, dynamic> coursetableParser(String html) {
   return data;
 }
 
+Map<String, dynamic> midtermAlertsParser(String html) {
+  Map<String, dynamic> data = {"courses": []};
+
+  var document = parse(html);
+  var table =
+      document.getElementsByTagName("table")[1].getElementsByTagName("tr");
+  try {
+    for (int i = 1; i < table.length; i++) {
+      var tdData = table[i].getElementsByTagName("td");
+      if (tdData.length < 5) {
+        continue;
+      }
+      if (tdData[5].text[0] == "是") {
+        data["courses"].add({
+          "entry": tdData[0].text,
+          "className": tdData[1].text,
+          "title": tdData[2].text,
+          "group": tdData[3].text,
+          "instructors": tdData[4].text,
+          "reason": tdData[6].text,
+          "remark": tdData[7].text
+        });
+      }
+    }
+  } on Exception catch (e) {
+    print(e);
+  }
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
