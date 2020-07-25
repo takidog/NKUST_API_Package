@@ -259,6 +259,39 @@ Map<String, dynamic> midtermAlertsParser(String html) {
   return data;
 }
 
+Map<String, dynamic> rewardAndPenaltyParser(String html) {
+  Map<String, dynamic> data = {"data": []};
+
+  var document = parse(html);
+  if (document.getElementsByTagName("table").length < 2) {
+    return data;
+  }
+  var table = document
+      .getElementsByTagName("table")[1]
+      .getElementsByTagName("tr")[1]
+      .getElementsByTagName("tr");
+  try {
+    for (int i = 1; i < table.length; i++) {
+      var tdData = table[i].getElementsByTagName("td");
+      if (tdData.length < 5) {
+        continue;
+      }
+      if (tdData[3].text.length < 2) {
+        continue;
+      }
+      data["data"].add({
+        "date": tdData[2].text,
+        "type": tdData[3].text,
+        "counts": tdData[4].text,
+        "reason": tdData[5].text
+      });
+    }
+  } on Exception catch (e) {
+    print(e);
+  }
+  return data;
+}
+
 void main() {
   new File('file.txt').readAsString().then((String contents) {
     print(apLoginParser(contents));
