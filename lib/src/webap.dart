@@ -287,4 +287,55 @@ class NKUST_API {
     }
     return query;
   }
+
+  Future<ResponseData> roomList(String cmpAreaId) async {
+    /*
+    Retrun type ResponseData
+    errorCode:
+    2000   succss.
+
+    5000   NKUST server error.
+    5002   Dio error, maybe NKUST server error.
+    5040   Timeout.
+    5400   Something error.
+
+    cmpAreaId
+    1=建工/2=燕巢/3=第一/4=楠梓/5=旗津
+    */
+    if (this.isLogin == false) {
+      return ResponseData(errorCode: 10002, errorMessage: "Need Login.");
+    }
+    var query = await apQuery("ag302_01", {"cmp_area_id": cmpAreaId});
+    if (query.errorCode >= 2000 && query.errorCode < 2100) {
+      query.parseData = roomListParser(query.response.data);
+      return query;
+    }
+    return query;
+  }
+
+  Future<ResponseData> roomCourseTableQuery(
+      String roomId, String years, String semesterValue) async {
+    /*
+    Retrun type ResponseData
+    errorCode:
+    2000   succss.
+
+    5000   NKUST server error.
+    5002   Dio error, maybe NKUST server error.
+    5040   Timeout.
+    5400   Something error.
+
+
+    */
+    if (this.isLogin == false) {
+      return ResponseData(errorCode: 10002, errorMessage: "Need Login.");
+    }
+    var query = await apQuery("ag302_02",
+        {"room_id": roomId, "yms_yms": "${years}#${semesterValue}"});
+    if (query.errorCode >= 2000 && query.errorCode < 2100) {
+      query.parseData = roomCourseTableQueryParser(query.response.data);
+      return query;
+    }
+    return query;
+  }
 }
