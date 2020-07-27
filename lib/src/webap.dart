@@ -104,7 +104,8 @@ class NKUST_API {
   }
 
   Future<ResponseData> apQuery(
-      /*
+      String queryQid, Map<String, String> queryData) async {
+    /*
     Retrun type ResponseData
     errorCode:
       2000   succss.
@@ -114,8 +115,6 @@ class NKUST_API {
       5400   Something error.
 
     */
-      String queryQid,
-      Map<String, String> queryData) async {
     String url =
         "https://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
     try {
