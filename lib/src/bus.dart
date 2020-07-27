@@ -156,16 +156,14 @@ class NKUST_Bus_API {
     /*
     Retrun typoe ResponseData
     errorCode:
-    1000   Login succss.
-    1001   Login fail.
+    2001   Login succss.
+    4001   Login fail(Wrong campus or not found user).
+    4002   Login fail(wrong password).
     5000   NKUST server error.
     5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
-    (Not used)
-    5041   Client side timeout. 
-    5042   Server side timeout.
     */
     if (busEncryptObject == null) {
       await loginPrepare();
