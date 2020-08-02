@@ -2,6 +2,10 @@ name: nkust_api
 version: 0.0.1
 description: >-
   NKUST API by dart.
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
 dependencies:
   dio: ^3.0.9
   dio_cookie_manager: ^1.0.0
