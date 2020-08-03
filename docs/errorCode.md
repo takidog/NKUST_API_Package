@@ -16,7 +16,7 @@ class ResponseData {
 | :-------: | :----------------------------------------------------------- | :--------------------------------: | :------------------------: |
 |   1000    | Login success  <br />(only use on webap login)               |                Null                |            Null            |
 |   2000    | General success                                              |                Yes                 |            Yes             |
-|    TBD    |                                                              |                                    |                            |
+|   1001    | Login fail<br />Password wrong.                              |                Null                |            Null            |
 |    TBD    |                                                              |                                    |                            |
 |   5000    | NKUST Server error                                           |                Null                |            Null            |
 |   5002    | Dio error, a little bit possible is <br />NKUST Server error |                Null                |            Null            |
