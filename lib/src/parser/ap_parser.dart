@@ -89,10 +89,12 @@ Map<String, dynamic> scoresParser(String html) {
         .getElementsByTagName("div")[0]
         .text);
     data['detail'] = {
-      "conduct": matches.elementAt(0).group(1),
-      "classRank": matches.elementAt(1).group(1),
-      "departmentRank": matches.elementAt(2).group(1),
-      "average": matches.elementAt(3).group(1)
+      "conduct": double.parse(matches.elementAt(0).group(1)),
+      "classRank": matches.elementAt(2).group(1),
+      "departmentRank": matches.elementAt(3).group(1),
+      "average": (matches.elementAt(1).group(1) != "")
+          ? double.parse(matches.elementAt(1).group(1))
+          : 0
     };
   } on Exception catch (e) {}
   //scores part
