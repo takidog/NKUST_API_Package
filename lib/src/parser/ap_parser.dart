@@ -94,7 +94,7 @@ Map<String, dynamic> scoresParser(String html) {
       "departmentRank": matches.elementAt(3).group(1),
       "average": (matches.elementAt(1).group(1) != "")
           ? double.parse(matches.elementAt(1).group(1))
-          : 0
+          : 0.0
     };
   } on Exception catch (e) {}
   //scores part
