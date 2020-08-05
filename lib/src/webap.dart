@@ -1,9 +1,4 @@
-//dio
-import 'package:dio/adapter.dart';
-import 'package:dio/dio.dart';
-import 'package:cookie_jar/cookie_jar.dart';
-//overwrite origin Cookie Manager.
-import 'package:nkust_api/src/utils/private_cookie_manager.dart';
+import 'package:nkust_api/src/utils/session.dart';
 //parser
 import 'package:nkust_api/src/parser/ap_parser.dart';
 //response data type
@@ -12,44 +7,21 @@ import 'package:nkust_api/src/utils/response.dart';
 import 'package:nkust_api/src/utils/config.dart';
 
 class NKUST_API {
-  static Dio dio;
   static NKUST_API _instance;
-  static CookieJar cookieJar;
   static NkustAPIConfig config;
   bool isLogin;
 
   static NKUST_API get instance {
     if (_instance == null) {
       _instance = NKUST_API();
-      dio = Dio();
-      cookieJar = CookieJar();
       config = NkustAPIConfig();
-      dioInit();
     }
     return _instance;
   }
 
-  void setProxy(String proxyIP) {
-    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
-        (client) {
-      client.findProxy = (uri) {
-        return "PROXY " + proxyIP;
-      };
-    };
-  }
-
   void setConfig(NkustAPIConfig customizeConfig) {
     config = customizeConfig;
-  }
-
-  static dioInit() {
-    // Use PrivateCookieManager to overwrite origin CookieManager, because
-    // Cookie name of the NKUST ap system not follow the RFC6265. :(
-    dio.interceptors.add(PrivateCookieManager(cookieJar));
-    dio.options.headers['user-agent'] =
-        'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
-    dio.options.connectTimeout = config.dioTimeoutMs;
-    dio.options.receiveTimeout = config.dioTimeoutMs;
+    Session.instance.timeoutMs = config.timeoutMs;
   }
 
   Future<ResponseData> apLogin(String username, String password) async {
@@ -58,49 +30,37 @@ class NKUST_API {
     errorCode:
     1000   Login succss.
     1001   Login fail.
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
-    (Not used)
-    5041   Client side timeout. 
-    5042   Server side timeout.
     */
-    try {
-      Response res = await dio.post(
-          "https://webap.nkust.edu.tw/nkust/perchk.jsp",
-          data: {"uid": username, "pwd": password},
-          options: Options(contentType: Headers.formUrlEncodedContentType));
-      if (res.statusCode != 200) {
-        return ResponseData(errorCode: 5001);
-      }
-      switch (apLoginParser(res.data)) {
-        //parse login html.
-        case 100:
-          // login success.
-          isLogin = true;
-          return ResponseData(errorCode: 1000, errorMessage: "login success.");
-        case 101:
-          //login fail.
-          return ResponseData(errorCode: 1001, errorMessage: "login fial.");
-      }
-    } on DioError catch (e) {
-      if (e.type == DioErrorType.CONNECT_TIMEOUT ||
-          e.type == DioErrorType.RECEIVE_TIMEOUT) {
+
+    ResponseData res = await Session.instance.post(
+        "https://webap.nkust.edu.tw/nkust/perchk.jsp",
+        body: {"uid": username, "pwd": password},
+        headers: {"content-type": "application/x-www-form-urlencoded"});
+    switch (res.errorCode) {
+      case 200:
+        break;
+      case 5040:
+        // timeout
         return ResponseData(errorCode: 5040, errorMessage: "Connect timeout.");
-      }
-      if (e.type == DioErrorType.RESPONSE) {
-        if (e.response.statusCode != 200) {
-          return ResponseData(
-              errorCode: 5000,
-              errorMessage: "NKUST Server have something wrong.");
-        }
-      }
-      return ResponseData(
-          errorCode: 5002, errorMessage: "Dio error or NKUST Server error :(");
-    } on Exception catch (e) {}
-    return ResponseData(errorCode: 5400, errorMessage: "Something error.");
+        break;
+      default:
+        return ResponseData(errorCode: 5400, errorMessage: "Something error.");
+        break;
+    }
+
+    switch (apLoginParser(res.response.body)) {
+      //parse login html.
+      case 100:
+        // login success.
+        isLogin = true;
+        return ResponseData(errorCode: 1000, errorMessage: "login success.");
+      case 101:
+        //login fail.
+        return ResponseData(errorCode: 1001, errorMessage: "login fial.");
+    }
   }
 
   Future<ResponseData> apQuery(
@@ -109,39 +69,29 @@ class NKUST_API {
     Retrun type ResponseData
     errorCode:
       2000   succss.
-      5000   NKUST server error.
-      5002   Dio error, maybe NKUST server error.
       5040   Timeout.
       5400   Something error.
 
     */
     String url =
         "https://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
-    try {
-      Response request = await dio.post(url,
-          data: queryData,
-          options: Options(contentType: Headers.formUrlEncodedContentType));
-      if (request.statusCode == 200) {
-        return ResponseData(
-            errorCode: 2000, errorMessage: "Success", response: request);
-      }
-      ;
-    } on DioError catch (e) {
-      if (e.type == DioErrorType.CONNECT_TIMEOUT ||
-          e.type == DioErrorType.RECEIVE_TIMEOUT) {
-        return ResponseData(errorCode: 5040, errorMessage: "Connect timeout.");
-      }
-      if (e.type == DioErrorType.RESPONSE) {
-        if (e.response.statusCode != 200) {
-          return ResponseData(
-              errorCode: 5000,
-              errorMessage: "NKUST Server have something wrong.");
-        }
-      }
+
+    ResponseData request = await Session.instance.post(url,
+        body: queryData,
+        headers: {"content-type": "application/x-www-form-urlencoded"});
+    if (request.errorCode == 200) {
       return ResponseData(
-          errorCode: 5002, errorMessage: "Dio error or NKUST Server error :(");
-    } on Exception catch (e) {}
-    return ResponseData(errorCode: 5400, errorMessage: "Something error.");
+          errorCode: 2000, errorMessage: "Success", response: request.response);
+    }
+    switch (request.errorCode) {
+      case 5040:
+        // timeout
+        return ResponseData(errorCode: 5040, errorMessage: "Connect timeout.");
+        break;
+      default:
+        return ResponseData(errorCode: 5400, errorMessage: "Something error.");
+        break;
+    }
   }
 
   Future<ResponseData> userInfo() async {
@@ -150,8 +100,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -161,7 +109,7 @@ class NKUST_API {
     }
     var query = await apQuery("ag003", null);
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = apUserInfoParser(query.response.data);
+      query.parseData = apUserInfoParser(query.response.body);
       return query;
     }
     return query;
@@ -173,8 +121,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -184,7 +130,7 @@ class NKUST_API {
     }
     var query = await apQuery("ag304_01", null);
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = semestersParser(query.response.data);
+      query.parseData = semestersParser(query.response.body);
       return query;
     }
     return query;
@@ -196,8 +142,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -208,7 +152,7 @@ class NKUST_API {
     var query =
         await apQuery("ag008", {"arg01": years, "arg02": semesterValue});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = scoresParser(query.response.data);
+      query.parseData = scoresParser(query.response.body);
       return query;
     }
     return query;
@@ -220,8 +164,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -232,7 +174,7 @@ class NKUST_API {
     var query =
         await apQuery("ag222", {"arg01": years, "arg02": semesterValue});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = coursetableParser(query.response.data);
+      query.parseData = coursetableParser(query.response.body);
       return query;
     }
     return query;
@@ -244,8 +186,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -256,7 +196,7 @@ class NKUST_API {
     var query =
         await apQuery("ag009", {"arg01": years, "arg02": semesterValue});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = midtermAlertsParser(query.response.data);
+      query.parseData = midtermAlertsParser(query.response.body);
       return query;
     }
     return query;
@@ -269,8 +209,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -281,7 +219,7 @@ class NKUST_API {
     var query =
         await apQuery("ak010", {"arg01": years, "arg02": semesterValue});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = rewardAndPenaltyParser(query.response.data);
+      query.parseData = rewardAndPenaltyParser(query.response.body);
       return query;
     }
     return query;
@@ -293,8 +231,7 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
+
     5040   Timeout.
     5400   Something error.
 
@@ -306,7 +243,7 @@ class NKUST_API {
     }
     var query = await apQuery("ag302_01", {"cmp_area_id": cmpAreaId});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = roomListParser(query.response.data);
+      query.parseData = roomListParser(query.response.body);
       return query;
     }
     return query;
@@ -319,8 +256,6 @@ class NKUST_API {
     errorCode:
     2000   succss.
 
-    5000   NKUST server error.
-    5002   Dio error, maybe NKUST server error.
     5040   Timeout.
     5400   Something error.
 
@@ -332,7 +267,7 @@ class NKUST_API {
     var query = await apQuery("ag302_02",
         {"room_id": roomId, "yms_yms": "${years}#${semesterValue}"});
     if (query.errorCode >= 2000 && query.errorCode < 2100) {
-      query.parseData = roomCourseTableQueryParser(query.response.data);
+      query.parseData = roomCourseTableQueryParser(query.response.body);
       return query;
     }
     return query;
