@@ -10,3 +10,4 @@ dependencies:
   dio: ^3.0.9
   dio_cookie_manager: ^1.0.0
   html: ^0.14.0+3
+  http: ^0.12.2
