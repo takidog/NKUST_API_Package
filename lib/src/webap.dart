@@ -47,7 +47,8 @@ class NKUST_API {
     // Cookie name of the NKUST ap system not follow the RFC6265. :(
     dio.interceptors.add(PrivateCookieManager(cookieJar));
     dio.options.headers['user-agent'] =
-        'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
+    dio.options.headers['Connection'] = 'close';
     dio.options.connectTimeout = config.dioTimeoutMs;
     dio.options.receiveTimeout = config.dioTimeoutMs;
   }
