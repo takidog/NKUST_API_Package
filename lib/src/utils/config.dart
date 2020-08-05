@@ -1,3 +1,3 @@
 class NkustAPIConfig {
-  int dioTimeoutMs = 5 * 1000;
+  int timeoutMs = 5500;
 }
