@@ -1,7 +1,6 @@
 import 'package:nkust_api/src/webap.dart';
 
 void main() async {
-  NKUST_API.instance.setProxy("127.0.0.1:8888");
   var res = await NKUST_API.instance.apLogin("11111", "12345");
 
   if (res.errorCode == 1000) {
