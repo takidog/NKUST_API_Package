@@ -11,16 +11,16 @@ import 'package:nkust_api/src/utils/response.dart';
 
 import 'package:nkust_api/src/utils/config.dart';
 
-class NKUST_API {
+class NkustApi {
   static Dio dio;
-  static NKUST_API _instance;
+  static NkustApi _instance;
   static CookieJar cookieJar;
   static NkustAPIConfig config;
   bool isLogin;
 
-  static NKUST_API get instance {
+  static NkustApi get instance {
     if (_instance == null) {
-      _instance = NKUST_API();
+      _instance = NkustApi();
       dio = Dio();
       cookieJar = CookieJar();
       config = NkustAPIConfig();
