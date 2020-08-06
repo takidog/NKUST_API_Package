@@ -173,8 +173,9 @@ Map<String, dynamic> coursetableParser(String html) {
       var _temptext =
           secondTable[i].getElementsByTagName('td')[0].text.replaceAll(" ", "");
 
-      data['coursetable']['timeCodes']
-          .add(_temptext.substring(0, _temptext.length - 10));
+      data['coursetable']['timeCodes'].add(_temptext
+          .substring(0, _temptext.length - 10)
+          .replaceAll(String.fromCharCode(160), ""));
     }
   } on Exception catch (e) {}
   //make each day.
