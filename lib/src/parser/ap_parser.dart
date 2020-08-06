@@ -235,6 +235,9 @@ Map<String, dynamic> midtermAlertsParser(String html) {
   Map<String, dynamic> data = {"courses": []};
 
   var document = parse(html);
+  if (document.getElementsByTagName("table").length < 2) {
+    return data;
+  }
   var table =
       document.getElementsByTagName("table")[1].getElementsByTagName("tr");
   try {
