@@ -216,12 +216,18 @@ Map<String, dynamic> coursetableParser(String html) {
         if (splitData.length <= 1) {
           continue;
         }
+        String title = splitData[0];
+        if (title.indexOf(">") > -1) {
+          title = title.substring(title.indexOf(">") + 1, title.length);
+        }
         data['coursetable'][keyName[key]].add({
-          'title': splitData[0],
+          'title': title,
           'date': {
             "startTime": courseTime[1].split('-')[0],
             "endTime": courseTime[1].split('-')[1],
             'section': courseTime[0]
+                .replaceAll(" ", "")
+                .replaceAll(String.fromCharCode(160), "")
           },
           'location': {"room": splitData[2]},
           'instructors': splitData[1].split(","),
@@ -363,8 +369,9 @@ Map<String, dynamic> roomCourseTableQueryParser(String html) {
       var _temptext =
           secondTable[i].getElementsByTagName('td')[0].text.replaceAll(" ", "");
 
-      data['coursetable']['timeCodes']
-          .add(_temptext.substring(0, _temptext.length - 10));
+      data['coursetable']['timeCodes'].add(_temptext
+          .substring(0, _temptext.length - 10)
+          .replaceAll(String.fromCharCode(160), ""));
     }
   } on Exception catch (e) {}
   //make each day.
@@ -411,12 +418,18 @@ Map<String, dynamic> roomCourseTableQueryParser(String html) {
         if (splitData.length <= 1) {
           continue;
         }
+        String title = splitData[0];
+        if (title.indexOf(">") > -1) {
+          title = title.substring(title.indexOf(">") + 1, title.length);
+        }
         data['coursetable'][keyName[key]].add({
-          'title': splitData[0].replaceAll("&nbsp;", ""),
+          'title': title.replaceAll("&nbsp;", ""),
           'date': {
             "startTime": courseTime[1].split('-')[0],
             "endTime": courseTime[1].split('-')[1],
             'section': courseTime[0]
+                .replaceAll(" ", "")
+                .replaceAll(String.fromCharCode(160), "")
           },
           'instructors': splitData[1].replaceAll("&nbsp;", "").split(","),
         });
