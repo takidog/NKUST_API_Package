@@ -11,16 +11,16 @@ import 'package:nkust_api/src/utils/response.dart';
 
 import 'package:nkust_api/src/utils/config.dart';
 
-class NKUST_API {
+class NkustApi {
   static Dio dio;
-  static NKUST_API _instance;
+  static NkustApi _instance;
   static CookieJar cookieJar;
   static NkustAPIConfig config;
   bool isLogin;
 
-  static NKUST_API get instance {
+  static NkustApi get instance {
     if (_instance == null) {
-      _instance = NKUST_API();
+      _instance = NkustApi();
       dio = Dio();
       cookieJar = CookieJar();
       config = NkustAPIConfig();
@@ -47,7 +47,8 @@ class NKUST_API {
     // Cookie name of the NKUST ap system not follow the RFC6265. :(
     dio.interceptors.add(PrivateCookieManager(cookieJar));
     dio.options.headers['user-agent'] =
-        'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36';
+    dio.options.headers['Connection'] = 'close';
     dio.options.connectTimeout = config.dioTimeoutMs;
     dio.options.receiveTimeout = config.dioTimeoutMs;
   }
@@ -104,7 +105,8 @@ class NKUST_API {
   }
 
   Future<ResponseData> apQuery(
-      /*
+      String queryQid, Map<String, String> queryData) async {
+    /*
     Retrun type ResponseData
     errorCode:
       2000   succss.
@@ -114,8 +116,6 @@ class NKUST_API {
       5400   Something error.
 
     */
-      String queryQid,
-      Map<String, String> queryData) async {
     String url =
         "https://webap.nkust.edu.tw/nkust/${queryQid.substring(0, 2)}_pro/${queryQid}.jsp";
     try {
